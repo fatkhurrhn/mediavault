@@ -1,188 +1,329 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asset Gallery</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Media Files Explorer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .category {
+            margin-bottom: 40px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .category h2 {
+            color: #495057;
+            margin-bottom: 20px;
+            padding-left: 10px;
+            border-left: 5px solid #667eea;
+        }
+
+        .file-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .file-item {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .file-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #495057;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-name i {
+            font-size: 1.2em;
+        }
+
+        .file-path {
+            background: #f1f3f5;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            color: #666;
+            word-break: break-all;
+            font-family: 'Courier New', monospace;
+        }
+
+        .copy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: background 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: #5a67d8;
+        }
+
+        .copy-btn.copied {
+            background: #48bb78;
+        }
+
+        .empty-message {
+            color: #868e96;
+            font-style: italic;
+            padding: 20px;
+            text-align: center;
+            grid-column: 1 / -1;
+        }
+
+        .preview {
+            max-width: 100%;
+            max-height: 150px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+
+        .audio-player {
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .video-player {
+            width: 100%;
+            max-height: 150px;
+            border-radius: 5px;
+        }
+
+        .icon {
+            font-size: 1.2em;
+        }
+
+        .audio-icon {
+            color: #f59e0b;
+        }
+
+        .video-icon {
+            color: #ef4444;
+        }
+
+        .image-icon {
+            color: #10b981;
+        }
+
+        .header-info {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #6c757d;
+        }
+
+        .path-info {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-family: monospace;
+            text-align: center;
+            font-size: 1.1em;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <div class="container mx-auto px-4 py-8">
-        <h1 class="text-3xl font-bold text-center mb-8">Asset bythur</h1>
-        <div class="flex justify-center">
-            <div class="flex border-b border-gray-200 mb-6">
-                <button id="imagesTab"
-                    class="py-2 px-4 font-medium text-blue-500 border-b-2 border-blue-500">Images</button>
-                <button id="videosTab" class="py-2 px-4 font-medium text-gray-500">Videos</button>
-            </div>
-        </div>
-        <div id="imagesSection" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            <!-- Images will be dynamically inserted here -->
+
+<body>
+    <div class="container">
+        <h1>📁 Media Files Explorer</h1>
+
+        <div class="header-info">
+            <p>Klik tombol copy untuk menyalin path file</p>
         </div>
 
-        <div id="videosSection" class="hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            <!-- Videos will be dynamically inserted here -->
+        <div class="path-info">
+            📂 Format path: <strong>folder/nama_file.ext</strong>
+        </div>
+
+        <div id="audioSection" class="category" style="display: none;">
+            <h2>🎵 Audio Files</h2>
+            <div class="file-list" id="audioList"></div>
+        </div>
+
+        <div id="imageSection" class="category" style="display: none;">
+            <h2>🖼️ Image Files</h2>
+            <div class="file-list" id="imageList"></div>
+        </div>
+
+        <div id="videoSection" class="category" style="display: none;">
+            <h2>🎬 Video Files</h2>
+            <div class="file-list" id="videoList"></div>
         </div>
     </div>
 
     <script>
-        const baseUrl = "https://assets-bythur.vercel.app";
+        // Fungsi untuk copy teks ke clipboard
+        async function copyToClipboard(text, button) {
+            try {
+                await navigator.clipboard.writeText(text);
+                const originalText = button.textContent;
+                button.textContent = '✅ Copied!';
+                button.classList.add('copied');
 
-        function getImageFiles() {
-            return [
-                "foto-profile.jpg"
-            ];
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            } catch (err) {
+                alert('Gagal menyalin teks');
+            }
         }
 
-        function getVideoFiles() {
-            return [
-                "17.mp4"
-            ];
-        }
+        // Daftar file yang diketahui
+        const files = {
+            audio: [
+                '001.mp3', '002.mp3', '003.mp3', '004.mp3',
+                '005.mp3', '006.mp3', '007.mp3', '008.mp3'
+            ],
+            images: [
+                '001.jpg'
+            ],
+            videos: [
+                '001.mp4'
+            ]
+        };
 
-        // Function to create a card for an image
-        function createImageCard(filename) {
-            const imageUrl = `${baseUrl}/img/${filename}`;
-            const card = document.createElement('div');
-            card.className = 'bg-white rounded-lg shadow-md overflow-hidden';
+        // Render semua file
+        function renderFiles() {
+            const audioSection = document.getElementById('audioSection');
+            const imageSection = document.getElementById('imageSection');
+            const videoSection = document.getElementById('videoSection');
 
-            card.innerHTML = `
-                <div class="h-48 overflow-hidden">
-                    <img src="img/${filename}" alt="${filename}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/300?text=Image+Not+Found'">
-                </div>
-                <div class="p-4">
-                    <div class="flex items-center bg-gray-50 rounded">
-                        <input type="text" value="${imageUrl}" class="flex-1 bg-transparent p-2 text-xs truncate" readonly>
-                        <button class="copy-btn p-2 text-gray-500 hover:text-blue-500" data-url="${imageUrl}">
-                            <i class="far fa-copy"></i>
-                        </button>
-                    </div>
-                </div>
-            `;
-
-            return card;
-        }
-
-        // Function to create a card for a video
-        function createVideoCard(filename) {
-            const videoUrl = `${baseUrl}/vid/${filename}`;
-            const card = document.createElement('div');
-            card.className = 'bg-white rounded-lg shadow-md overflow-hidden';
-
-            card.innerHTML = `
-                <div class="h-48 overflow-hidden bg-black flex items-center justify-center">
-                    <video class="w-full h-full object-contain" controls>
-                        <source src="vid/${filename}" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                </div>
-                <div class="p-4">
-                    <div class="flex items-center bg-gray-50 rounded">
-                        <input type="text" value="${videoUrl}" class="flex-1 bg-transparent p-2 text-xs truncate" readonly>
-                        <button class="copy-btn p-2 text-gray-500 hover:text-blue-500" data-url="${videoUrl}">
-                            <i class="far fa-copy"></i>
-                        </button>
-                    </div>
-                </div>
-            `;
-
-            return card;
-        }
-
-        // Function to load images
-        function loadImages() {
-            const imagesSection = document.getElementById('imagesSection');
-            imagesSection.innerHTML = '';
-
-            const imageFiles = getImageFiles();
-            if (imageFiles.length === 0) {
-                imagesSection.innerHTML = '<p class="text-gray-500 col-span-full text-center py-8">No images found</p>';
-                return;
+            // Render audio files
+            if (files.audio.length > 0) {
+                audioSection.style.display = 'block';
+                const audioList = document.getElementById('audioList');
+                audioList.innerHTML = files.audio.map(file => {
+                    const filePath = `audio/${file}`;
+                    return `
+                        <div class="file-item">
+                            <div class="file-name">
+                                <span class="icon audio-icon">🎵</span>
+                                ${file}
+                            </div>
+                            <audio controls class="audio-player">
+                                <source src="${filePath}" type="audio/mpeg">
+                                Browser tidak mendukung audio player
+                            </audio>
+                            <div class="file-path">${filePath}</div>
+                            <button class="copy-btn" onclick="copyToClipboard('${filePath}', this)">
+                                📋 Copy Path
+                            </button>
+                        </div>
+                    `;
+                }).join('');
             }
 
-            imageFiles.forEach(filename => {
-                const card = createImageCard(filename);
-                imagesSection.appendChild(card);
-            });
-        }
-
-        // Function to load videos
-        function loadVideos() {
-            const videosSection = document.getElementById('videosSection');
-            videosSection.innerHTML = '';
-
-            const videoFiles = getVideoFiles();
-            if (videoFiles.length === 0) {
-                videosSection.innerHTML = '<p class="text-gray-500 col-span-full text-center py-8">No videos found</p>';
-                return;
+            // Render image files
+            if (files.images.length > 0) {
+                imageSection.style.display = 'block';
+                const imageList = document.getElementById('imageList');
+                imageList.innerHTML = files.images.map(file => {
+                    const filePath = `img/${file}`;
+                    return `
+                        <div class="file-item">
+                            <div class="file-name">
+                                <span class="icon image-icon">🖼️</span>
+                                ${file}
+                            </div>
+                            <img src="${filePath}" alt="${file}" class="preview" 
+                                 onerror="this.style.display='none'">
+                            <div class="file-path">${filePath}</div>
+                            <button class="copy-btn" onclick="copyToClipboard('${filePath}', this)">
+                                📋 Copy Path
+                            </button>
+                        </div>
+                    `;
+                }).join('');
             }
 
-            videoFiles.forEach(filename => {
-                const card = createVideoCard(filename);
-                videosSection.appendChild(card);
-            });
+            // Render video files
+            if (files.videos.length > 0) {
+                videoSection.style.display = 'block';
+                const videoList = document.getElementById('videoList');
+                videoList.innerHTML = files.videos.map(file => {
+                    const filePath = `vid/${file}`;
+                    return `
+                        <div class="file-item">
+                            <div class="file-name">
+                                <span class="icon video-icon">🎬</span>
+                                ${file}
+                            </div>
+                            <video controls class="video-player">
+                                <source src="${filePath}" type="video/mp4">
+                                Browser tidak mendukung video player
+                            </video>
+                            <div class="file-path">${filePath}</div>
+                            <button class="copy-btn" onclick="copyToClipboard('${filePath}', this)">
+                                📋 Copy Path
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+            }
         }
 
-        // Function to copy URL to clipboard
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                // Show feedback (you could add a toast notification here)
-                console.log('Copied to clipboard:', text);
-            }).catch(err => {
-                console.error('Failed to copy:', err);
-            });
-        }
-
-        // Initialize the page
-        document.addEventListener('DOMContentLoaded', () => {
-            // Load initial content
-            loadImages();
-            loadVideos();
-
-            // Set up tab switching
-            const imagesTab = document.getElementById('imagesTab');
-            const videosTab = document.getElementById('videosTab');
-            const imagesSection = document.getElementById('imagesSection');
-            const videosSection = document.getElementById('videosSection');
-
-            imagesTab.addEventListener('click', () => {
-                imagesTab.classList.add('text-blue-500', 'border-blue-500');
-                imagesTab.classList.remove('text-gray-500');
-                videosTab.classList.add('text-gray-500');
-                videosTab.classList.remove('text-blue-500', 'border-blue-500');
-                imagesSection.classList.remove('hidden');
-                videosSection.classList.add('hidden');
-            });
-
-            videosTab.addEventListener('click', () => {
-                videosTab.classList.add('text-blue-500', 'border-blue-500');
-                videosTab.classList.remove('text-gray-500');
-                imagesTab.classList.add('text-gray-500');
-                imagesTab.classList.remove('text-blue-500', 'border-blue-500');
-                videosSection.classList.remove('hidden');
-                imagesSection.classList.add('hidden');
-            });
-
-            // Set up copy buttons (using event delegation)
-            document.addEventListener('click', (e) => {
-                if (e.target.classList.contains('copy-btn') || e.target.closest('.copy-btn')) {
-                    const button = e.target.classList.contains('copy-btn') ? e.target : e.target.closest('.copy-btn');
-                    const url = button.getAttribute('data-url');
-                    copyToClipboard(url);
-
-                    // Visual feedback
-                    const icon = button.querySelector('i');
-                    icon.classList.remove('fa-copy');
-                    icon.classList.add('fa-check');
-
-                    setTimeout(() => {
-                        icon.classList.remove('fa-check');
-                        icon.classList.add('fa-copy');
-                    }, 2000);
-                }
-            });
-        });
+        // Jalankan render saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', renderFiles);
     </script>
 </body>
 
