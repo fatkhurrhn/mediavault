@@ -4,325 +4,457 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Media Files Explorer</title>
+    <title>MediaVault · File Explorer</title>
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- RemixIcon CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
+
+    <!-- Custom font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
     <style>
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+        /* Smooth scroll and hide scrollbar */
+        html {
+            scroll-behavior: smooth;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            padding: 30px;
+        ::-webkit-scrollbar {
+            display: none;
         }
 
-        h1 {
-            color: #333;
-            margin-bottom: 30px;
-            text-align: center;
-            font-size: 2.5em;
-            border-bottom: 3px solid #667eea;
-            padding-bottom: 10px;
+        /* Glassmorphism effects */
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .category {
-            margin-bottom: 40px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
+        .glass-card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .category h2 {
-            color: #495057;
-            margin-bottom: 20px;
-            padding-left: 10px;
-            border-left: 5px solid #667eea;
+        .glass-card:hover {
+            background: rgba(51, 65, 85, 0.7);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
         }
 
-        .file-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 15px;
+        /* Category header gradient */
+        .category-gradient {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.2) 0%, rgba(124, 58, 237, 0.2) 100%);
+            border-left: 4px solid #6366f1;
         }
 
-        .file-item {
-            background: white;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 15px;
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .file-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            border-color: #667eea;
-        }
-
-        .file-name {
-            font-weight: 600;
-            color: #495057;
-            font-size: 1.1em;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .file-name i {
-            font-size: 1.2em;
-        }
-
-        .file-path {
-            background: #f1f3f5;
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-size: 0.9em;
-            color: #666;
-            word-break: break-all;
-            font-family: 'Courier New', monospace;
-        }
-
+        /* Button animation */
         .copy-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9em;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            transition: background 0.3s ease;
+            transition: all 0.2s ease;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
         }
 
         .copy-btn:hover {
-            background: #5a67d8;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            transform: scale(1.05);
         }
 
-        .copy-btn.copied {
-            background: #48bb78;
+        .copy-btn:active {
+            transform: scale(0.95);
         }
 
-        .empty-message {
-            color: #868e96;
-            font-style: italic;
-            padding: 20px;
-            text-align: center;
-            grid-column: 1 / -1;
+        /* Shimmer animation for header */
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+
+            100% {
+                background-position: 1000px 0;
+            }
         }
 
-        .preview {
-            max-width: 100%;
-            max-height: 150px;
-            object-fit: cover;
-            border-radius: 5px;
-            margin-top: 5px;
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            background-size: 1000px 100%;
+            animation: shimmer 8s infinite linear;
         }
 
-        .audio-player {
-            width: 100%;
-            margin-top: 5px;
+        /* Pulse animation for active elements */
+        @keyframes pulse-glow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+            }
+
+            50% {
+                box-shadow: 0 0 30px rgba(99, 102, 241, 0.4);
+            }
         }
 
-        .video-player {
-            width: 100%;
-            max-height: 150px;
-            border-radius: 5px;
+        .pulse-glow {
+            animation: pulse-glow 3s infinite;
         }
 
-        .icon {
-            font-size: 1.2em;
+        @keyframes blob {
+
+            0%,
+            100% {
+                transform: translate(0px, 0px) scale(1);
+            }
+
+            33% {
+                transform: translate(30px, -50px) scale(1.1);
+            }
+
+            66% {
+                transform: translate(-20px, 20px) scale(0.9);
+            }
         }
 
-        .audio-icon {
-            color: #f59e0b;
+        .animate-blob {
+            animation: blob 7s infinite;
         }
 
-        .video-icon {
-            color: #ef4444;
+        .animation-delay-2000 {
+            animation-delay: 2s;
         }
 
-        .image-icon {
-            color: #10b981;
-        }
-
-        .header-info {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #6c757d;
-        }
-
-        .path-info {
-            background: #e9ecef;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            font-family: monospace;
-            text-align: center;
-            font-size: 1.1em;
+        .animation-delay-4000 {
+            animation-delay: 4s;
         }
     </style>
 </head>
 
-<body>
-    <div class="container">
-        <h1>📁 Media Files Explorer</h1>
+<body class="bg-[#0a0a0f] min-h-screen p-4 md:p-6 lg:p-8 relative overflow-x-hidden">
 
-        <div class="header-info">
-            <p>Klik tombol copy untuk menyalin path file</p>
+    <!-- Animated background blobs -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div
+            class="absolute -top-40 -right-40 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob">
         </div>
-
-        <div class="path-info">
-            📂 Format path: <strong>folder/nama_file.ext</strong>
+        <div
+            class="absolute -bottom-40 -left-40 w-96 h-96 bg-indigo-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000">
         </div>
-
-        <div id="audioSection" class="category" style="display: none;">
-            <h2>🎵 Audio Files</h2>
-            <div class="file-list" id="audioList"></div>
-        </div>
-
-        <div id="imageSection" class="category" style="display: none;">
-            <h2>🖼️ Image Files</h2>
-            <div class="file-list" id="imageList"></div>
-        </div>
-
-        <div id="videoSection" class="category" style="display: none;">
-            <h2>🎬 Video Files</h2>
-            <div class="file-list" id="videoList"></div>
+        <div
+            class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000">
         </div>
     </div>
 
+    <!-- Main Container -->
+    <div class="max-w-7xl mx-auto relative z-10">
+
+        <!-- Header with glass effect -->
+        <div class="glass rounded-2xl p-6 md:p-8 mb-6 md:mb-8 pulse-glow">
+            <div class="flex items-center gap-3 mb-3">
+                <div
+                    class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                    <i class="ri-folders-line text-2xl text-white"></i>
+                </div>
+                <div>
+                    <h1
+                        class="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
+                        MediaVault
+                    </h1>
+                    <p class="text-gray-400 text-sm md:text-base mt-1 flex items-center gap-2">
+                        <i class="ri-stack-line"></i>
+                        <span id="totalFiles">0</span> files ·
+                        <i class="ri-folder-open-line"></i>
+                        <span id="currentDomain" class="font-mono text-xs bg-black/30 px-2 py-1 rounded"></span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Quick copy all buttons -->
+            <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-white/10">
+                <button onclick="copyAllLinks('audio')"
+                    class="copy-btn px-4 py-2 rounded-xl text-white text-sm font-medium flex items-center gap-2 hover:shadow-lg transition-all">
+                    <i class="ri-file-copy-line"></i>
+                    Copy All Audio
+                </button>
+                <button onclick="copyAllLinks('gif')"
+                    class="copy-btn px-4 py-2 rounded-xl text-white text-sm font-medium flex items-center gap-2 hover:shadow-lg transition-all">
+                    <i class="ri-file-copy-line"></i>
+                    Copy All GIFs
+                </button>
+                <button onclick="copyAllLinks('img')"
+                    class="copy-btn px-4 py-2 rounded-xl text-white text-sm font-medium flex items-center gap-2 hover:shadow-lg transition-all">
+                    <i class="ri-file-copy-line"></i>
+                    Copy All Images
+                </button>
+                <button onclick="copyAllLinks('vid')"
+                    class="copy-btn px-4 py-2 rounded-xl text-white text-sm font-medium flex items-center gap-2 hover:shadow-lg transition-all">
+                    <i class="ri-file-copy-line"></i>
+                    Copy All Videos
+                </button>
+            </div>
+        </div>
+
+        <!-- Categories Grid -->
+        <div class="space-y-6 md:space-y-8">
+
+            <!-- Audio Section -->
+            <div id="audioSection" class="glass-card rounded-2xl p-5 md:p-6 hidden">
+                <div class="category-gradient rounded-xl p-4 mb-4 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                        <i class="ri-music-2-line text-xl text-orange-400"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Audio Files</h2>
+                        <p class="text-xs text-gray-400"><span id="audioCount">0</span> tracks</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3" id="audioList"></div>
+            </div>
+
+            <!-- GIF Section -->
+            <div id="gifSection" class="glass-card rounded-2xl p-5 md:p-6 hidden">
+                <div class="category-gradient rounded-xl p-4 mb-4 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                        <i class="ri-file-gif-line text-xl text-green-400"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">GIF Files</h2>
+                        <p class="text-xs text-gray-400"><span id="gifCount">0</span> animations</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3" id="gifList"></div>
+            </div>
+
+            <!-- Image Section -->
+            <div id="imageSection" class="glass-card rounded-2xl p-5 md:p-6 hidden">
+                <div class="category-gradient rounded-xl p-4 mb-4 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                        <i class="ri-image-line text-xl text-blue-400"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Image Files</h2>
+                        <p class="text-xs text-gray-400"><span id="imageCount">0</span> photos</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3" id="imageList"></div>
+            </div>
+
+            <!-- Video Section -->
+            <div id="videoSection" class="glass-card rounded-2xl p-5 md:p-6 hidden">
+                <div class="category-gradient rounded-xl p-4 mb-4 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
+                        <i class="ri-movie-line text-xl text-red-400"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white">Video Files</h2>
+                        <p class="text-xs text-gray-400"><span id="videoCount">0</span> videos</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3" id="videoList"></div>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 text-center text-gray-500 text-sm glass rounded-xl p-4">
+            <i class="ri-copyright-line"></i> MediaVault · Click <i class="ri-file-copy-line mx-1"></i> to copy full URL
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast"
+        class="fixed bottom-4 right-4 glass-card rounded-xl px-4 py-3 text-white text-sm flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <i class="ri-checkbox-circle-line text-green-400"></i>
+        <span id="toastMessage">Copied!</span>
+    </div>
+
     <script>
-        // Fungsi untuk copy teks ke clipboard
-        async function copyToClipboard(text, button) {
-            try {
-                await navigator.clipboard.writeText(text);
-                const originalText = button.textContent;
-                button.textContent = '✅ Copied!';
-                button.classList.add('copied');
-
-                setTimeout(() => {
-                    button.textContent = originalText;
-                    button.classList.remove('copied');
-                }, 2000);
-            } catch (err) {
-                alert('Gagal menyalin teks');
-            }
-        }
-
-        // Daftar file yang diketahui
+        // File database
         const files = {
             audio: [
                 '001.mp3', '002.mp3', '003.mp3', '004.mp3',
                 '005.mp3', '006.mp3', '007.mp3', '008.mp3'
             ],
+            gif: [
+                'G01.gif', 'G02.gif', 'G03.gif', 'G04.gif',
+                'G05.gif', 'G06.gif', 'G07.gif'
+            ],
             images: [
-                '001.jpg'
+                '001.jpg', 'F01.jpg', 'F02.jpg', 'F03.jpg', 'F04.jpg',
+                'F05.jpg', 'F06.jpg', 'F07.jpg', 'F08.jpg', 'F09.jpg',
+                'F10.jpg', 'F11.jpg', 'F12.jpg', 'F13.jpg', 'F14.jpg',
+                'F15.jpg', 'F16.jpg'
             ],
             videos: [
                 '001.mp4'
             ]
         };
 
-        // Render semua file
-        function renderFiles() {
-            const audioSection = document.getElementById('audioSection');
-            const imageSection = document.getElementById('imageSection');
-            const videoSection = document.getElementById('videoSection');
+        // Get base URL (root domain only)
+        function getBaseUrl() {
+            const url = window.location.href;
+            // Get root URL (up to the port number)
+            const match = url.match(/^(https?:\/\/[^\/]+)/);
+            return match ? match[0] + '/' : url;
+        }
 
-            // Render audio files
-            if (files.audio.length > 0) {
-                audioSection.style.display = 'block';
-                const audioList = document.getElementById('audioList');
-                audioList.innerHTML = files.audio.map(file => {
-                    const filePath = `audio/${file}`;
-                    return `
-                        <div class="file-item">
-                            <div class="file-name">
-                                <span class="icon audio-icon">🎵</span>
-                                ${file}
-                            </div>
-                            <audio controls class="audio-player">
-                                <source src="${filePath}" type="audio/mpeg">
-                                Browser tidak mendukung audio player
-                            </audio>
-                            <div class="file-path">${filePath}</div>
-                            <button class="copy-btn" onclick="copyToClipboard('${filePath}', this)">
-                                📋 Copy Path
-                            </button>
-                        </div>
-                    `;
-                }).join('');
-            }
+        // Show toast notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
 
-            // Render image files
-            if (files.images.length > 0) {
-                imageSection.style.display = 'block';
-                const imageList = document.getElementById('imageList');
-                imageList.innerHTML = files.images.map(file => {
-                    const filePath = `img/${file}`;
-                    return `
-                        <div class="file-item">
-                            <div class="file-name">
-                                <span class="icon image-icon">🖼️</span>
-                                ${file}
-                            </div>
-                            <img src="${filePath}" alt="${file}" class="preview" 
-                                 onerror="this.style.display='none'">
-                            <div class="file-path">${filePath}</div>
-                            <button class="copy-btn" onclick="copyToClipboard('${filePath}', this)">
-                                📋 Copy Path
-                            </button>
-                        </div>
-                    `;
-                }).join('');
-            }
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 2000);
+        }
 
-            // Render video files
-            if (files.videos.length > 0) {
-                videoSection.style.display = 'block';
-                const videoList = document.getElementById('videoList');
-                videoList.innerHTML = files.videos.map(file => {
-                    const filePath = `vid/${file}`;
-                    return `
-                        <div class="file-item">
-                            <div class="file-name">
-                                <span class="icon video-icon">🎬</span>
-                                ${file}
-                            </div>
-                            <video controls class="video-player">
-                                <source src="${filePath}" type="video/mp4">
-                                Browser tidak mendukung video player
-                            </video>
-                            <div class="file-path">${filePath}</div>
-                            <button class="copy-btn" onclick="copyToClipboard('${filePath}', this)">
-                                📋 Copy Path
-                            </button>
-                        </div>
-                    `;
-                }).join('');
+        // Copy to clipboard
+        async function copyToClipboard(text, button) {
+            try {
+                await navigator.clipboard.writeText(text);
+                const originalIcon = button.innerHTML;
+                button.innerHTML = '<i class="ri-check-line"></i>';
+                button.classList.add('bg-green-600');
+
+                showToast('Copied to clipboard!');
+
+                setTimeout(() => {
+                    button.innerHTML = originalIcon;
+                    button.classList.remove('bg-green-600');
+                }, 2000);
+            } catch (err) {
+                showToast('Failed to copy');
             }
         }
 
-        // Jalankan render saat halaman dimuat
+        // Copy all links in category
+        async function copyAllLinks(category) {
+            const baseUrl = getBaseUrl();
+            let links = [];
+
+            switch (category) {
+                case 'audio':
+                    links = files.audio.map(f => baseUrl + 'audio/' + f);
+                    break;
+                case 'gif':
+                    links = files.gif.map(f => baseUrl + 'gif/' + f);
+                    break;
+                case 'img':
+                    links = files.images.map(f => baseUrl + 'img/' + f);
+                    break;
+                case 'vid':
+                    links = files.videos.map(f => baseUrl + 'vid/' + f);
+                    break;
+            }
+
+            const text = links.join('\n');
+            await navigator.clipboard.writeText(text);
+            showToast(`Copied ${links.length} ${category} links!`);
+        }
+
+        // Render file item
+        function renderFileItem(folder, file, type) {
+            const baseUrl = getBaseUrl();
+            const filePath = `${folder}/${file}`;
+            const fullUrl = baseUrl + filePath;
+
+            let preview = '';
+            let icon = '';
+
+            // Set icon based on type
+            if (type === 'audio') icon = 'ri-music-2-line text-orange-400';
+            else if (type === 'gif') icon = 'ri-file-gif-line text-green-400';
+            else if (type === 'img') icon = 'ri-image-line text-blue-400';
+            else if (type === 'vid') icon = 'ri-movie-line text-red-400';
+
+            // Add preview for media
+            if (type === 'audio') {
+                preview = `<audio controls class="w-full h-8 mt-2 rounded-lg">
+                    <source src="${filePath}" type="audio/mpeg">
+                </audio>`;
+            } else if (type === 'gif' || type === 'img') {
+                preview = `<img src="${filePath}" alt="${file}" class="w-full h-24 object-cover rounded-lg mt-2 bg-black/30" 
+                    onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWltYWdlIj48cmVjdCB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHg9IjMiIHk9IjMiIHJ4PSIyIiByeT0iMiIvPjxjaXJjbGUgY3g9IjkuNSIgY3k9IjkuNSIgcj0iMi41Ii8+PHBhdGggZD0ibTIxIDE1LTMuMDYtMy4wNmEyIDIgMCAwIDAtMi44MyAwTDE0IDE3Ii8+PC9zdmc+'">`;
+            } else if (type === 'vid') {
+                preview = `<video class="w-full h-24 object-cover rounded-lg mt-2 bg-black/30" controls>
+                    <source src="${filePath}" type="video/mp4">
+                </video>`;
+            }
+
+            return `
+                <div class="glass-card rounded-xl p-3 hover:scale-102 transition-all duration-300">
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-center gap-2">
+                            <i class="${icon} text-lg"></i>
+                            <span class="text-white text-sm font-medium truncate max-w-[120px]">${file}</span>
+                        </div>
+                        <button onclick="copyToClipboard('${fullUrl}', this)" 
+                            class="copy-btn w-8 h-8 rounded-lg flex items-center justify-center text-white">
+                            <i class="ri-file-copy-line"></i>
+                        </button>
+                    </div>
+                    
+                    ${preview}
+                    
+                    <div class="mt-2 text-xs text-gray-400 truncate font-mono bg-black/30 p-2 rounded-lg">
+                        ${fullUrl}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Render all files
+        function renderFiles() {
+            // Update domain display
+            document.getElementById('currentDomain').textContent = getBaseUrl();
+
+            // Calculate total files
+            const total = files.audio.length + files.gif.length + files.images.length + files.videos.length;
+            document.getElementById('totalFiles').textContent = total;
+
+            // Render audio
+            if (files.audio.length > 0) {
+                document.getElementById('audioSection').classList.remove('hidden');
+                document.getElementById('audioCount').textContent = files.audio.length;
+                document.getElementById('audioList').innerHTML = files.audio
+                    .map(f => renderFileItem('audio', f, 'audio')).join('');
+            }
+
+            // Render gif
+            if (files.gif.length > 0) {
+                document.getElementById('gifSection').classList.remove('hidden');
+                document.getElementById('gifCount').textContent = files.gif.length;
+                document.getElementById('gifList').innerHTML = files.gif
+                    .map(f => renderFileItem('gif', f, 'gif')).join('');
+            }
+
+            // Render images
+            if (files.images.length > 0) {
+                document.getElementById('imageSection').classList.remove('hidden');
+                document.getElementById('imageCount').textContent = files.images.length;
+                document.getElementById('imageList').innerHTML = files.images
+                    .map(f => renderFileItem('img', f, 'img')).join('');
+            }
+
+            // Render videos
+            if (files.videos.length > 0) {
+                document.getElementById('videoSection').classList.remove('hidden');
+                document.getElementById('videoCount').textContent = files.videos.length;
+                document.getElementById('videoList').innerHTML = files.videos
+                    .map(f => renderFileItem('vid', f, 'vid')).join('');
+            }
+        }
+
+        // Initialize
         document.addEventListener('DOMContentLoaded', renderFiles);
     </script>
 </body>
